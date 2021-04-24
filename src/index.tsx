@@ -1,6 +1,7 @@
 import React from 'react';
 import { render } from 'react-dom';
 import style from './index.module.css';
+import { useDnDSort } from './useDnDSort';
 
 const App: React.FC = () => {
   const imageList: string[] = [
@@ -15,12 +16,18 @@ const App: React.FC = () => {
     'https://images.pexels.com/photos/5603660/pexels-photo-5603660.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
   ];
 
+  const result = useDnDSort(imageList);
+
   return (
     <div className={style.body}>
       <div className={style.container}>
-        {imageList.map((item: string) => (
-          <div key={item} className={style.imageCard}>
-            <img src={item} alt="ソート可能な画像" className={style.image} />
+        {result.map((item) => (
+          <div key={item.key} className={style.imageCard} {...item.events}>
+            <img
+              src={item.value}
+              alt="ソート可能な画像"
+              className={style.image}
+            />
           </div>
         ))}
       </div>
