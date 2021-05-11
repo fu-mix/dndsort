@@ -87,7 +87,16 @@ export const useDnDSort = <T>(defaultItems: T[]): DnDSortResult<T>[] => {
     );
 
     if (hovererdIndex !== -1) {
-      console.log('Hello World!');
+      state.pointerPosition.x = clientX;
+      state.pointerPosition.y = clientY;
+
+      dndItems.splice(dragIndex, 1);
+      dndItems.splice(hovererdIndex, 0, dragElement);
+
+      const { left: x, top: y } = dragElement.element.getBoundingClientRect();
+
+      dragElement.position = { x, y };
+      setItems(dndItems.map((v) => v.value));
     }
   };
 
@@ -119,7 +128,7 @@ export const useDnDSort = <T>(defaultItems: T[]): DnDSortResult<T>[] => {
         events: {
           ref: (element: HTMLElement | null) => {
             if (!element) return;
-            const { dndItems } = state;
+            const { dndItems, dragElement, pointerPosition } = state;
 
             element.style.transform = '';
 
@@ -129,6 +138,31 @@ export const useDnDSort = <T>(defaultItems: T[]): DnDSortResult<T>[] => {
 
             if (itemIndex === -1) {
               return dndItems.push({ key, value, element, position });
+            }
+
+            if (dragElement?.key === key) {
+              const dragX = dragElement.position.x - position.x;
+              const dragY = dragElement.position.y - position.y;
+
+              element.style.transform = `translate(${dragX}px,${dragY}px`;
+
+              pointerPosition.x -= dragX;
+              pointerPosition.y -= dragY;
+            }
+
+            if (dragElement?.key !== key) {
+              const item = dndItems[itemIndex];
+
+              const x = item.position.x - position.x;
+              const y = item.position.y - position.y;
+
+              element.style.transition = '';
+              element.style.transform = `translate(${x}px,${y}px)`;
+
+              requestAnimationFrame(() => {
+                element.style.transform = '';
+                element.style.transition = 'all 300ms';
+              });
             }
 
             state.dndItems[itemIndex] = { key, value, element, position };
